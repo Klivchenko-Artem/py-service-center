@@ -1,0 +1,23 @@
+{% load static %}<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Сервисный центр{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}">
+</head>
+<body>
+  <header>
+    <a class="brand" href="{% url 'service:dashboard' %}">Сервисный центр</a>
+    <nav>
+      <a href="{% url 'service:create_ticket' %}">Оставить заявку</a>
+      <a href="{% url 'service:ticket_status' %}">Узнать статус</a>
+      <a href="/admin/">Для сотрудников</a>
+    </nav>
+  </header>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

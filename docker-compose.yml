@@ -1,0 +1,56 @@
+services:
+  web:
+    build:
+      context: .
+      # Стенд поднимается из стадии dev: на нём гоняются тесты и линтер.
+      # Боевой образ собирается без target и dev-зависимостей не содержит
+      target: dev
+    entrypoint: ["./entrypoint.sh"]
+    command: ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+    ports:
+      # Порт на хосте можно подвинуть: HTTP_PORT=8003 docker compose up -d
+      - "${HTTP_PORT:-8002}:8000"
+    environment:
+      SECRET_KEY: "локальный-ключ-для-стенда"
+      DEBUG: "False"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,web"
+      DATABASE_URL: "postgres://service:service@postgres:5432/service"
+      # Суперпользователь стенда: пароль лежит здесь же, потому что база тоже
+      # поднимается пустой на локальной машине
+      DJANGO_SUPERUSER_USERNAME: "admin"
+      DJANGO_SUPERUSER_PASSWORD: "stand-password"
+      DJANGO_SUPERUSER_EMAIL: "admin@example.com"
+    volumes:
+      - .:/app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      # Первые секунд пятнадцать контейнер занят миграциями и сборкой статики
+      # и отвечает отказом. Без проверки это выглядит как «стенд сломан»
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/')\" || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: service
+      POSTGRES_PASSWORD: service
+      POSTGRES_DB: service
+    ports:
+      # Порт нестандартный, чтобы не спорить с другими стендами на машине
+      - "${POSTGRES_PORT:-5435}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U service"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pgdata:

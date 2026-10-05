@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Оставить заявку{% endblock %}
+
+{% block content %}
+  <h1>Оставить заявку</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Отправить</button>
+  </form>
+{% endblock %}

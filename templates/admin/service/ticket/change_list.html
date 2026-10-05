@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+  {{ block.super }}
+  {% if summary %}
+    <p class="summary">
+      В работе: <b>{{ summary.open }}</b> ·
+      просрочено: <b>{{ summary.overdue }}</b> ·
+      средний чек: <b>{{ summary.avg_price|default_if_none:"-"|floatformat:0 }} ₽</b>
+    </p>
+  {% endif %}
+{% endblock %}

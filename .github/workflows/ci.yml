@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: Линтер, проверки Django и тесты
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: service
+          POSTGRES_PASSWORD: service
+          POSTGRES_DB: service
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U service"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      SECRET_KEY: ключ-для-прогона-в-ci
+      DEBUG: "False"
+      DATABASE_URL: postgres://service:service@localhost:5432/service
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Поднять Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+
+      - name: Поставить зависимости
+        run: pip install -r requirements-dev.txt
+
+      - name: Линтер
+        run: ruff check .
+
+      - name: Проверки Django
+        # WARNING, а не ERROR: проверки деплоя почти все предупреждения,
+        # и с уровнем ERROR шаг не ловил вообще ничего, стоял для вида
+        run: python manage.py check --deploy --fail-level WARNING
+
+      - name: Миграции не отстали от моделей
+        # Забытый makemigrations это классическая поломка на деплое
+        run: python manage.py makemigrations --check --dry-run
+
+      - name: Тесты
+        run: pytest

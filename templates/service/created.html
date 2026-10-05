@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Заявка принята{% endblock %}
+
+{% block content %}
+  <h1>Заявка принята</h1>
+
+  <p class="number">{{ ticket.number }}</p>
+  <p>{{ ticket.device }}, {{ ticket.problem }}</p>
+  <p>Ориентировочный срок: {{ ticket.deadline }}.</p>
+  <p>Статус можно посмотреть <a href="{% url 'service:ticket_status' %}">по номеру и телефону</a>.</p>
+{% endblock %}

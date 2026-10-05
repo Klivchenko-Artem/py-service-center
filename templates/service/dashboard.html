@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Ремонт техники</h1>
+  <p class="lead">Оставьте заявку, назовём номер, по нему можно следить за ремонтом.</p>
+
+  <div class="cards">
+    <div class="card"><span class="value">{{ stats.open }}</span><span>в работе</span></div>
+    <div class="card"><span class="value">{{ stats.done }}</span><span>отремонтировано</span></div>
+    <div class="card"><span class="value">{{ stats.total }}</span><span>заявок всего</span></div>
+    <div class="card">
+      <span class="value">{{ stats.avg_price|default_if_none:"-"|floatformat:0 }} ₽</span>
+      <span>средний чек</span>
+    </div>
+  </div>
+
+  {% if by_status %}
+    <h2>По статусам</h2>
+    <table>
+      <tr><th>Статус</th><th>Заявок</th></tr>
+      {% for row in by_status %}
+        <tr><td>{{ row.label }}</td><td>{{ row.count }}</td></tr>
+      {% endfor %}
+    </table>
+  {% endif %}
+
+  <p><a class="button" href="{% url 'service:create_ticket' %}">Оставить заявку</a></p>
+{% endblock %}

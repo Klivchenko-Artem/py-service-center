@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Статус заявки{% endblock %}
+
+{% block content %}
+  <h1>Статус заявки</h1>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Проверить</button>
+  </form>
+
+  {% if ticket %}
+    <div class="result">
+      <p class="number">{{ ticket.number }}</p>
+      <p>{{ ticket.device }}, {{ ticket.get_status_display }}</p>
+      {% if ticket.price %}<p>Стоимость: {{ ticket.price }} ₽</p>{% endif %}
+      {% if ticket.is_overdue %}<p class="warn">Срок вышел, мы уже разбираемся.</p>{% endif %}
+    </div>
+  {% elif not_found %}
+    <p class="warn">Заявка не найдена. Проверьте номер и телефон.</p>
+  {% endif %}
+{% endblock %}
